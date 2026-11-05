@@ -17,7 +17,7 @@ that covers the core toolkit of a sell-side quant / risk desk:
 | **Vol surfaces** | Raw SVI fitting, SSVI, Durrleman butterfly and calendar arbitrage checks, Dupire local vol, local-vol MC |
 | **PDE** | Crank-Nicolson with Rannacher smoothing; American exercise by the penalty method; knock-out barriers |
 | **Lattices** | CRR and Leisen-Reimer binomial trees: European, American, Bermudan |
-| **Monte Carlo** | Antithetics, optimal control variates, randomised QMC (Sobol), Brownian-bridge barriers, Longstaff-Schwartz |
+| **Monte Carlo** | Antithetics, optimal control variates, randomised QMC (Sobol), Brownian-bridge barriers, Longstaff-Schwartz, pathwise and likelihood-ratio Greeks |
 | **Rates** | Par-curve bootstrapping, Nelson-Siegel-Svensson, Vasicek and CIR (closed forms, Jamshidian bond options, exact simulation) |
 | **Risk** | Historical / normal / Student-t / Cornish-Fisher / MC VaR and ES; Kupiec and Christoffersen backtests |
 | **Econometrics** | GARCH(1,1) quasi-MLE with standard errors and variance forecasts |
@@ -25,7 +25,7 @@ that covers the core toolkit of a sell-side quant / risk desk:
 | **Alpha research** | Order-book imbalance, microprice, order-flow imbalance, trade-flow imbalance; IC decay with Newey-West inference; purged walk-forward ridge; cost-aware backtest; Probabilistic and Deflated Sharpe; Avellaneda-Stoikov market making with alpha skew; Binance data loader |
 
 ```
-91 tests · ~45 s · deterministic seeds · Monte Carlo checks asserted within 4 standard errors
+93 tests · ~45 s · deterministic seeds · Monte Carlo checks asserted within 4 standard errors
 ```
 
 ---
@@ -167,7 +167,7 @@ simulated histories. The GARCH VaR moves with volatility and fails only 10%.
 git clone https://github.com/zihadpcode/QuantForge.git && cd QuantForge
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-pytest                       # 91 tests, ~45 s
+pytest                       # 93 tests, ~45 s
 python examples/showcase.py  # regenerates docs/figures and docs/RESULTS.md (~45 s)
 python examples/alpha_research.py  # alpha study -> docs/ALPHA_RESULTS.md (~20 s)
 ```
@@ -230,7 +230,7 @@ src/quantforge/
   blackscholes.py  implied_vol.py  fourier.py  heston.py  svi.py  localvol.py
   pde.py  trees.py  exotics.py  montecarlo.py  rates.py  risk.py  garch.py  portfolio.py
   alpha/           signals.py  evaluation.py  market_making.py  simulate.py  data.py
-tests/            91 tests: closed forms, published benchmarks, cross-method agreement
+tests/            93 tests: closed forms, published benchmarks, cross-method agreement
 examples/showcase.py        regenerates the pricing/risk figures and results table
 examples/alpha_research.py  end-to-end alpha study (simulated by default, or Binance files)
 docs/             figures, RESULTS.md, ALPHA.md (guide), ALPHA_RESULTS.md

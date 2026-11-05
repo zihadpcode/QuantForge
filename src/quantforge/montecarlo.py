@@ -29,6 +29,7 @@ __all__ = [
     "asian_mc",
     "barrier_mc",
     "longstaff_schwartz",
+    "mc_greeks",
 ]
 
 
@@ -265,3 +266,51 @@ def longstaff_schwartz(
     # immediate exercise at t=0 is never optimal for these tests, but honour it
     price = max(price, max(w * (S0 - K), 0.0))
     return MCResult(price=price, stderr=stderr, n_paths=int(samples.size))
+
+
+def mc_greeks(S0, K, T, r, sigma, q=0.0, is_call=True, n_paths=200_000, seed=None) -> dict[str, MCResult]:
+    """Monte Carlo Greeks of a European option: pathwise, likelihood-ratio and mixed.
+
+    With ``S_T = S0 exp((r - q - sigma^2/2) T + sigma sqrt(T) Z)`` and ``D = e^{-rT}``:
+
+    * **Pathwise** (differentiate the payoff along each path; needs a payoff
+      that is continuous in the parameter)::
+
+          delta = D 1{S_T > K} S_T / S0
+          vega  = D 1{S_T > K} S_T (sqrt(T) Z - sigma T)
+
+    * **Likelihood ratio** (differentiate the density; works for any payoff,
+      including digitals, at the price of a higher variance)::
+
+          delta = D payoff Z / (S0 sigma sqrt(T))
+          gamma = D payoff (Z^2 - 1 - Z sigma sqrt(T)) / (S0^2 sigma^2 T)
+          vega  = D payoff ((Z^2 - 1) / sigma - Z sqrt(T))
+
+    * **Mixed LR-pathwise gamma**: the likelihood-ratio derivative of the
+      pathwise delta, ``D 1{S_T > K} (S_T / S0^2) (Z / (sigma sqrt(T)) - 1)``.
+      There is no pathwise gamma: the delta of a vanilla payoff jumps at ``K``.
+
+    Put formulas replace ``1{S_T > K}`` with ``-1{S_T < K}``. All estimators use
+    the same normal draws, so their variances are directly comparable.
+    """
+    rng = np.random.default_rng(seed)
+    z = rng.standard_normal(n_paths)
+    srt = sigma * np.sqrt(T)
+    ST = S0 * np.exp((r - q - 0.5 * sigma**2) * T + srt * z)
+    D = np.exp(-r * T)
+    w = 1.0 if is_call else -1.0
+    payoff = np.maximum(w * (ST - K), 0.0)
+    itm = w * ((ST > K) if is_call else (ST < K)).astype(float)
+
+    samples = {
+        "delta_pathwise": D * itm * ST / S0,
+        "vega_pathwise": D * itm * ST * (np.sqrt(T) * z - sigma * T),
+        "delta_lr": D * payoff * z / (S0 * srt),
+        "gamma_lr": D * payoff * (z * z - 1.0 - z * srt) / (S0**2 * srt**2),
+        "vega_lr": D * payoff * ((z * z - 1.0) / sigma - z * np.sqrt(T)),
+        "gamma_mixed": D * itm * ST / S0**2 * (z / srt - 1.0),
+    }
+    return {
+        k: MCResult(price=float(v.mean()), stderr=float(v.std(ddof=1) / np.sqrt(n_paths)), n_paths=n_paths)
+        for k, v in samples.items()
+    }

@@ -146,3 +146,19 @@ def test_longstaff_schwartz_matches_bermudan_lattice():
     # out-of-sample LSM is a lower bound up to MC noise and must be close to the lattice value
     assert res.price < berm + 4 * res.stderr
     assert res.price > berm - 4 * res.stderr - 0.01
+
+
+# ------------------------------------------------------- Monte Carlo Greeks --
+@pytest.mark.parametrize("is_call", [True, False])
+def test_mc_greeks_unbiased_and_ordered_by_variance(is_call):
+    from quantforge.montecarlo import mc_greeks
+
+    args = (100.0, 105.0, 0.75, 0.04, 0.25, 0.01, is_call)
+    ref = bs.greeks(*args)
+    res = mc_greeks(*args, n_paths=200_000, seed=3)
+    for name, r in res.items():
+        assert abs(r.price - ref[name.split("_")[0]]) < 4 * r.stderr, name
+    # pathwise beats likelihood ratio where both exist; mixed gamma beats pure LR gamma
+    assert res["delta_pathwise"].stderr < 0.6 * res["delta_lr"].stderr
+    assert res["vega_pathwise"].stderr < 0.4 * res["vega_lr"].stderr
+    assert res["gamma_mixed"].stderr < 0.5 * res["gamma_lr"].stderr
