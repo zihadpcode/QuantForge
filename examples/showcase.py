@@ -43,7 +43,7 @@ plt.rcParams.update({
     "axes.edgecolor": GRID, "axes.labelcolor": INK2, "axes.titlecolor": INK,
     "axes.titlesize": 12, "axes.titleweight": "semibold", "axes.titlelocation": "left",
     "axes.labelsize": 10, "xtick.color": INK2, "ytick.color": INK2,
-    "xtick.labelsize": 9, "ytick.labelsize": 9, "axes.grid": True, "grid.color": GRID,
+    "xtick.labelsize": 9, "ytick.labelsize": 9, "axes.grid": True, "axes.axisbelow": True, "grid.color": GRID,
     "grid.linewidth": 0.8, "axes.spines.top": False, "axes.spines.right": False,
     "legend.frameon": False, "legend.fontsize": 9, "lines.linewidth": 2.0,
     "font.family": "DejaVu Sans",

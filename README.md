@@ -20,9 +20,10 @@ that covers the core toolkit of a sell-side quant / risk desk:
 | **Risk** | Historical / normal / Student-t / Cornish-Fisher / MC VaR and ES; Kupiec and Christoffersen backtests |
 | **Econometrics** | GARCH(1,1) quasi-MLE with standard errors and variance forecasts |
 | **Portfolio** | Min-variance, max-Sharpe, efficient frontier (with or without a long-only constraint), risk parity, Ledoit-Wolf shrinkage (matches scikit-learn to 1e-12) |
+| **Alpha research** | Order-book imbalance, microprice, order-flow imbalance, trade-flow imbalance; IC decay with Newey-West inference; purged walk-forward ridge; cost-aware backtest; Probabilistic and Deflated Sharpe; Avellaneda-Stoikov market making with alpha skew; Binance data loader |
 
 ```
-72 tests · ~25 s · deterministic seeds · Monte Carlo checks asserted within 4 standard errors
+90 tests · ~45 s · deterministic seeds · Monte Carlo checks asserted within 4 standard errors
 ```
 
 ---
@@ -58,6 +59,39 @@ Notes worth reading:
 * **GARCH VaR is rejected 10% of the time, not 5%.** The model is re-estimated
   on 1,500 days, and parameter uncertainty inflates the breach count slightly.
   This is reported as measured rather than tuned away.
+
+---
+
+## Alpha research: signals, honest evaluation, market making
+
+`quantforge.alpha` is a short-horizon alpha pipeline of the kind used at
+market-making and HFT firms. The full guide, from zero, is
+**[docs/ALPHA.md](docs/ALPHA.md)**, and the generated report is in
+[docs/ALPHA_RESULTS.md](docs/ALPHA_RESULTS.md).
+
+These results come from a **simulated** order book with a planted alpha.
+That is how the pipeline is validated: the true answer is known by
+construction, and a zero-alpha market serves as the control. The same script
+runs unchanged on Binance `bookTicker` and `aggTrades` files.
+
+| finding | number |
+|---|---|
+| Naive OLS on overlapping returns "finds" alpha in a zero-alpha market | 34 / 40 runs |
+| Newey-West inference, same markets | 4 / 40 runs |
+| Combined ridge alpha, out-of-sample (h = 10 steps) | R² 0.103, IC 0.32 |
+| Same pipeline on the zero-alpha market | R² −0.0007 |
+| Break-even taker fee of that alpha | ≈ 1.0 bp, so it loses money at a 5 bp taker fee |
+| Market maker vs informed flow: symmetric → Avellaneda-Stoikov → + alpha skew | Sharpe 0.78 → 5.61 → 7.13 |
+
+![IC decay](docs/figures/alpha_ic_decay.png)
+
+The alpha enters the trading model through the reservation price:
+
+$$r_t = s_t + \hat\alpha_t\,\frac{1-e^{-\theta\tau}}{\theta} - q_t\,\gamma\sigma^2\tau,\qquad \delta^a+\delta^b=\gamma\sigma^2\tau+\tfrac{2}{\gamma}\ln\!\left(1+\tfrac{\gamma}{k}\right)$$
+
+A no-look-ahead test, which scrambles the future and checks that past signals
+are unchanged, caught a real leakage bug during development. It is described
+in the guide.
 
 ---
 
@@ -129,8 +163,9 @@ simulated histories. The GARCH VaR moves with volatility and fails only 10%.
 git clone <this repo> && cd quantforge
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-pytest                       # 72 tests, ~25 s
+pytest                       # 90 tests, ~45 s
 python examples/showcase.py  # regenerates docs/figures and docs/RESULTS.md (~45 s)
+python examples/alpha_research.py  # alpha study -> docs/ALPHA_RESULTS.md (~20 s)
 ```
 
 ```python
@@ -190,8 +225,10 @@ longstaff_schwartz(36, 40, 1.0, 0.06, 0.2, n_exercise=50, seed=1).price  # ~4.47
 src/quantforge/
   blackscholes.py  implied_vol.py  fourier.py  heston.py  svi.py  localvol.py
   pde.py  trees.py  exotics.py  montecarlo.py  rates.py  risk.py  garch.py  portfolio.py
-tests/            72 tests: closed forms, published benchmarks, cross-method agreement
-examples/showcase.py   regenerates every figure and the results table
+  alpha/           signals.py  evaluation.py  market_making.py  simulate.py  data.py
+tests/            90 tests: closed forms, published benchmarks, cross-method agreement
+examples/showcase.py        regenerates the pricing/risk figures and results table
+examples/alpha_research.py  end-to-end alpha study (simulated by default, or Binance files)
 docs/             figures and RESULTS.md
 ```
 
