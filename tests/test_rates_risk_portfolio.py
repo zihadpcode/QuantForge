@@ -227,3 +227,14 @@ def test_ledoit_wolf_matches_sklearn():
     cov, s = ledoit_wolf(X)
     assert s == pytest.approx(est.shrinkage_, abs=1e-12)
     np.testing.assert_allclose(cov, est.covariance_, atol=1e-12)
+
+
+def test_tangency_rejects_rf_above_gmv_return():
+    cov = np.array([[0.04, 0.018], [0.018, 0.09]])
+    mu = np.array([0.05, 0.12])
+    gmv = min_variance(cov)
+    assert gmv @ mu < 0.07  # rf above the GMV return: the old code returned the minimum-Sharpe portfolio
+    with pytest.raises(ValueError):
+        tangency(mu, cov, rf=0.07)
+    w = tangency(mu, cov, rf=0.02)
+    assert (w @ mu - 0.02) / np.sqrt(w @ cov @ w) > 0

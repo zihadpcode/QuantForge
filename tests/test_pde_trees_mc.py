@@ -162,3 +162,10 @@ def test_mc_greeks_unbiased_and_ordered_by_variance(is_call):
     assert res["delta_pathwise"].stderr < 0.6 * res["delta_lr"].stderr
     assert res["vega_pathwise"].stderr < 0.4 * res["vega_lr"].stderr
     assert res["gamma_mixed"].stderr < 0.5 * res["gamma_lr"].stderr
+
+
+def test_input_validation():
+    with pytest.raises(ValueError):
+        down_barrier_call(100, 100, 90, 1, 0.05, 0.25, knock="up")
+    with pytest.raises(ValueError):
+        gbm_paths(100, 1, 0.05, 0.2, n_steps=4, n_paths=1001, antithetic=True)

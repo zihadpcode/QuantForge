@@ -22,7 +22,7 @@ from . import blackscholes as bs
 
 __all__ = ["implied_vol"]
 
-_VOL_LO, _VOL_HI = 1e-9, 10.0
+_VOL_LO, _VOL_HI, _VOL_CAP = 1e-9, 10.0, 1e4
 
 
 def implied_vol(
@@ -97,6 +97,13 @@ def implied_vol(
 
     lo = np.full_like(sigma, _VOL_LO)
     hi = np.full_like(sigma, _VOL_HI)
+    # Every valid quote is below the sigma -> inf limit, so a root exists; widen the
+    # bracket until it contains it (very short-dated quotes can need sigma >> 10).
+    need = bs.price(s_, k_, t_, r_, hi, q_, c_) < tgt
+    while need.any() and hi.max() < _VOL_CAP:
+        hi[need] *= 2.0
+        need = bs.price(s_, k_, t_, r_, hi, q_, c_) < tgt
+    sigma = np.minimum(sigma, 0.5 * hi)
     price_floor = 8.0 * np.finfo(float).eps * np.maximum(s_, k_)
     done = zero.copy()
 
@@ -128,6 +135,12 @@ def implied_vol(
         lo[act], hi[act] = lo_a, hi_a
         done[act] = converged | collapsed
 
+    # anything that failed to converge (e.g. root beyond _VOL_CAP) is reported as NaN
+    final = bs.price(s_, k_, t_, r_, sigma, q_, c_) - tgt
+    vega_f = bs.greeks(s_, k_, t_, r_, sigma, q_, c_)["vega"]
+    with np.errstate(divide="ignore", invalid="ignore"):
+        ok = (np.abs(final) <= price_floor) | (np.abs(final) / vega_f <= max(tol, 1e-10) * 100)
+    sigma[~ok & ~zero] = np.nan
     sigma[zero] = 0.0
     out[idx] = sigma
     out = out.reshape(shape)

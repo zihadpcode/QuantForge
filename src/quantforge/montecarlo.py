@@ -66,6 +66,8 @@ def gbm_paths(
     """Exact GBM paths, shape ``(n_paths, n_steps + 1)`` including ``S0``."""
     rng = np.random.default_rng(seed)
     dt = T / n_steps
+    if antithetic and n_paths % 2:
+        raise ValueError("antithetic sampling needs an even n_paths")
     m = n_paths // 2 if antithetic else n_paths
     z = normals(m, n_steps, rng, method)
     if antithetic:

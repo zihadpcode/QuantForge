@@ -25,7 +25,7 @@ that covers the core toolkit of a sell-side quant / risk desk:
 | **Alpha research** | Order-book imbalance, microprice, order-flow imbalance, trade-flow imbalance; IC decay with Newey-West inference; purged walk-forward ridge; cost-aware backtest; Probabilistic and Deflated Sharpe; Avellaneda-Stoikov market making with alpha skew; Binance data loader |
 
 ```
-93 tests · ~45 s · deterministic seeds · Monte Carlo checks asserted within 4 standard errors
+96 tests · ~45 s · deterministic seeds · Monte Carlo checks asserted within 4 standard errors
 ```
 
 ---
@@ -167,7 +167,7 @@ simulated histories. The GARCH VaR moves with volatility and fails only 10%.
 git clone https://github.com/zihadpcode/QuantForge.git && cd QuantForge
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-pytest                       # 93 tests, ~45 s
+pytest                       # 96 tests, ~45 s
 python examples/showcase.py  # regenerates docs/figures and docs/RESULTS.md (~45 s)
 python examples/alpha_research.py  # alpha study -> docs/ALPHA_RESULTS.md (~20 s)
 ```
@@ -230,7 +230,7 @@ src/quantforge/
   blackscholes.py  implied_vol.py  fourier.py  heston.py  svi.py  localvol.py
   pde.py  trees.py  exotics.py  montecarlo.py  rates.py  risk.py  garch.py  portfolio.py
   alpha/           signals.py  evaluation.py  market_making.py  simulate.py  data.py
-tests/            93 tests: closed forms, published benchmarks, cross-method agreement
+tests/            96 tests: closed forms, published benchmarks, cross-method agreement
 examples/showcase.py        regenerates the pricing/risk figures and results table
 examples/alpha_research.py  end-to-end alpha study (simulated by default, or Binance files)
 docs/             figures, RESULTS.md, ALPHA.md (guide), ALPHA_RESULTS.md

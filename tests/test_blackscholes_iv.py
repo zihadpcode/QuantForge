@@ -88,3 +88,10 @@ def test_implied_vol_rejects_arbitrage_and_scalar():
     v = implied_vol(10.450583572185565, 100, 100, 1, 0.05)
     assert isinstance(v, float)
     assert v == pytest.approx(0.2, abs=1e-12)
+
+
+def test_implied_vol_above_initial_bracket():
+    # very short-dated quotes can need sigma >> 10; they used to be clamped to 10.0
+    for sig, T in ((25.0, 1e-3), (500.0, 1e-4)):
+        p = bs.price(100, 100, T, 0.0, sig)
+        assert implied_vol(p, 100, 100, T, 0.0) == pytest.approx(sig, rel=1e-9)

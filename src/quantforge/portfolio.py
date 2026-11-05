@@ -49,7 +49,13 @@ def tangency(mu, cov, rf: float = 0.0, long_only: bool = False) -> np.ndarray:
     ex = mu - rf
     if not long_only:
         x = np.linalg.solve(cov, ex)
-        return x / x.sum()
+        total = x.sum()
+        if total <= 0:
+            # 1' S^-1 (mu - rf) <= 0  <=>  rf >= return of the global minimum-variance portfolio.
+            # Normalising would flip the sign and return the *minimum*-Sharpe portfolio.
+            raise ValueError("no fully-invested tangency portfolio: rf is at or above the "
+                             "global minimum-variance return")
+        return x / total
 
     def neg_sharpe(w):
         return -(w @ ex) / np.sqrt(w @ cov @ w)

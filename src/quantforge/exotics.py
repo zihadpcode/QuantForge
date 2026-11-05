@@ -58,4 +58,6 @@ def down_barrier_call(S0, K, H, T, r, sigma, q=0.0, knock="out"):
             + K * dfr * (H / S0) ** (2 * lam - 2) * N(y1 - sqt)
         )
         c_di = vanilla - c_do
+    if knock not in ("out", "in"):
+        raise ValueError("knock must be 'out' or 'in'")
     return float(c_do if knock == "out" else c_di)
