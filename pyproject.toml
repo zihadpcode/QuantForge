@@ -15,7 +15,7 @@ dependencies = ["numpy>=1.24", "scipy>=1.10"]
 Homepage = "https://github.com/zihadpcode/QuantForge"
 
 [project.optional-dependencies]
-dev = ["pytest>=7", "matplotlib>=3.7", "scikit-learn>=1.3", "statsmodels>=0.14"]
+dev = ["pytest>=7", "matplotlib>=3.7", "scikit-learn>=1.3", "statsmodels>=0.14", "ruff>=0.6"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -23,3 +23,14 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+# report generators build long Markdown table rows inline
+"examples/*" = ["E501"]

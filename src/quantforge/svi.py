@@ -21,8 +21,8 @@ Static arbitrage
 
 from __future__ import annotations
 
-from dataclasses import astuple, dataclass
-from typing import Callable, Sequence
+from collections.abc import Callable, Sequence
+from dataclasses import dataclass
 
 import numpy as np
 from scipy import optimize
@@ -139,7 +139,9 @@ def fit_raw_svi(
         for s0 in (0.05 * span, 0.2 * span, 0.5 * span):
             for rho0 in (-0.5, 0.0):
                 x0 = np.clip([vmin0, 0.1, rho0, m0, s0], lb + 1e-8, ub - 1e-8)
-                sol = optimize.least_squares(resid, x0, bounds=(lb, ub), method="trf", xtol=1e-14, ftol=1e-14, gtol=1e-14, max_nfev=5000)
+                sol = optimize.least_squares(
+                    resid, x0, bounds=(lb, ub), method="trf", xtol=1e-14, ftol=1e-14, gtol=1e-14, max_nfev=5000
+                )
                 if best is None or sol.cost < best.cost:
                     best = sol
 

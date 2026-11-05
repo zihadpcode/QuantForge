@@ -5,7 +5,7 @@ import pytest
 
 from quantforge.alpha import evaluation as ev
 from quantforge.alpha import signals as sg
-from quantforge.alpha.data import AGGTRADES_COLS, BOOKTICKER_COLS, book_from_events, load_binance
+from quantforge.alpha.data import BOOKTICKER_COLS, book_from_events, load_binance
 from quantforge.alpha.market_making import simulate_market_maker
 from quantforge.alpha.simulate import simulate_book
 
@@ -55,7 +55,7 @@ def test_signals_never_look_ahead(planted):
     for a in arrs:
         a[t0 + 1:] = a[t0 + 1:] * rng.uniform(0.5, 1.5, a.size - t0 - 1)
     pert = compute(*arrs)
-    for x, y in zip(base, pert):
+    for x, y in zip(base, pert, strict=True):
         # guard against a vacuous pass: NaN == NaN under assert_array_equal
         assert np.isfinite(x[t0 - 1000: t0 + 1]).all()
         np.testing.assert_array_equal(x[: t0 + 1], y[: t0 + 1])
@@ -157,7 +157,9 @@ def test_taker_backtest_hand_example():
     bid, ask = mid - 0.05, mid + 0.05
     f = np.array([1.0, np.nan, -1.0, np.nan, 0.0])  # long, then short, horizon 2
     r = ev.taker_backtest(f, bid, ask, horizon=2, threshold_bps=0.0, fee_bps=1.0)
-    hs = lambda m: 0.05 / m * 1e4  # half-spread in bps
+    def hs(m):  # half-spread in bps
+        return 0.05 / m * 1e4
+
     # period 0: long 100 -> 101 ; period 1: short 101 -> 100 ; final flatten at t=4
     g0, g1 = 1 / 100 * 1e4, 1 / 101 * 1e4
     np.testing.assert_allclose(r.gross_bps, [g0, g1])

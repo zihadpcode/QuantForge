@@ -297,7 +297,7 @@ r_l, v_l, _ = efficient_frontier(mu, cov, 40, long_only=True)
 fig, ax = plt.subplots(figsize=(7.2, 4.6))
 ax.plot(100 * v_u, 100 * r_u, color=SERIES[0], label="frontier (unconstrained)")
 ax.plot(100 * v_l, 100 * r_l, color=SERIES[1], label="frontier (long-only)")
-for nm, vv, mm in zip(names, vols, mu):
+for nm, vv, mm in zip(names, vols, mu, strict=True):
     ax.plot(100 * vv, 100 * mm, "o", ms=6, color=INK2, mec=SURFACE, mew=1.5)
     ax.annotate(nm, (100 * vv, 100 * mm), xytext=(6, -3), textcoords="offset points", fontsize=8, color=INK2)
 w_tan = tangency(mu, cov, rf, True)
@@ -305,7 +305,7 @@ sr = (w_tan @ mu - rf) / np.sqrt(w_tan @ cov @ w_tan)
 xs = np.linspace(0, 0.26, 50)
 ax.plot(100 * xs, 100 * (rf + sr * xs), color=MUTED, lw=1.2, ls="--", label=f"capital market line (Sharpe {sr:.2f})")
 pts = {"min variance": min_variance(cov, True), "risk parity": risk_parity(cov), "max Sharpe": w_tan}
-for (nm, w), c, ms in zip(pts.items(), [SERIES[2], SERIES[4], SERIES[6]], [8, 11, 7]):
+for (nm, w), c, ms in zip(pts.items(), [SERIES[2], SERIES[4], SERIES[6]], [8, 11, 7], strict=True):
     ax.plot(100 * np.sqrt(w @ cov @ w), 100 * w @ mu, "s", ms=ms, color=c, mec=SURFACE, mew=1.5, label=nm, zorder=5)
 ax.set_xlim(0, 26)
 ax.set_ylim(1.5, 11.5)

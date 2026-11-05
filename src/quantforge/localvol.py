@@ -13,7 +13,7 @@ is finite and positive precisely when the surface is free of static arbitrage.
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 import numpy as np
 

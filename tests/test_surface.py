@@ -46,7 +46,7 @@ def test_ssvi_is_arbitrage_free_under_gatheral_jacquier_conditions():
     assert s.gatheral_jacquier_sufficient
     Ts = np.linspace(0.02, 5, 40)
     for T in Ts:
-        _, ok = butterfly_arbitrage(lambda k: s.total_variance(k, T), K_GRID)
+        _, ok = butterfly_arbitrage(lambda k, T=T: s.total_variance(k, T), K_GRID)
         assert ok
     _, cal_ok = calendar_arbitrage([lambda k, T=T: s.total_variance(k, T) for T in Ts], K_GRID)
     assert cal_ok

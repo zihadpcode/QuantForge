@@ -207,7 +207,9 @@ def test_long_only_solutions(market):
     rets, vols, W = efficient_frontier(mu, cov, 15, long_only=True)
     assert np.all(W >= -1e-12) and np.all(np.diff(vols) >= -1e-9)
     # long-only optimum can never beat unconstrained
-    sr = lambda w: (w @ mu - 0.02) / np.sqrt(w @ cov @ w)
+    def sr(w):
+        return (w @ mu - 0.02) / np.sqrt(w @ cov @ w)
+
     assert sr(tangency(mu, cov, 0.02, True)) <= sr(tangency(mu, cov, 0.02)) + 1e-12
 
 

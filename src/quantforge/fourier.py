@@ -15,7 +15,7 @@ the ``(r - q) T`` drift) and accepting complex arrays of any shape.
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 import numpy as np
 from scipy import integrate

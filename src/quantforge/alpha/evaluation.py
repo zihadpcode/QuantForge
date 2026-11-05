@@ -132,7 +132,7 @@ def walk_forward_splits(n: int, n_folds: int, embargo: int, min_train: int):
     (which looks ``h`` steps ahead) overlaps the test block.
     """
     starts = np.linspace(min_train, n, n_folds + 1).astype(int)
-    for a, b in zip(starts[:-1], starts[1:]):
+    for a, b in zip(starts[:-1], starts[1:], strict=True):
         train_end = a - embargo
         if train_end <= 0:
             raise ValueError("embargo too large for min_train")
@@ -202,7 +202,9 @@ class TakerResult:
         return float(self.pnl_bps.mean() / sd) if sd > 0 else 0.0
 
 
-def taker_backtest(forecast_bps, bid, ask, horizon: int, threshold_bps: float = 0.0, fee_bps: float = 0.0) -> TakerResult:
+def taker_backtest(
+    forecast_bps, bid, ask, horizon: int, threshold_bps: float = 0.0, fee_bps: float = 0.0
+) -> TakerResult:
     """Trade the sign of the forecast with market orders, rebalancing every ``horizon`` steps.
 
     Position ``p_k = sign(f) * 1{|f| > threshold}`` (units of notional) is set at

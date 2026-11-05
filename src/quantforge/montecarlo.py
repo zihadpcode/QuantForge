@@ -18,7 +18,6 @@ import numpy as np
 from scipy.special import ndtri
 from scipy.stats import qmc
 
-from . import blackscholes as bs
 from .exotics import geometric_asian
 
 __all__ = [
