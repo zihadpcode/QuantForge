@@ -163,6 +163,8 @@ simulated histories. The GARCH VaR moves with volatility and fails only 10%.
 
 ## Quick start
 
+For a guided tour with outputs already rendered, open **[notebooks/quickstart.ipynb](notebooks/quickstart.ipynb)** on GitHub.
+
 ```bash
 git clone https://github.com/zihadpcode/QuantForge.git && cd QuantForge
 python -m venv .venv && source .venv/bin/activate
