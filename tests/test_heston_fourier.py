@@ -72,4 +72,6 @@ def test_calibration_recovers_parameters():
     res = calibrate_heston(S, r, q, KK, TT, px, cp, x0=HestonParams(0.04, 1.0, 0.04, 0.3, -0.3))
     assert res.success
     np.testing.assert_allclose(res.params.as_array(), true.as_array(), rtol=1e-5, atol=1e-6)
-    assert res.iv_rmse < 1e-6
+    # Parameters within 1e-5 relative imply IV errors of order 1e-6, so the IV bound must sit
+    # above that (1e-5 = 0.001 vol points). A 1e-6 bound failed on one CI runner's BLAS build.
+    assert res.iv_rmse < 1e-5
