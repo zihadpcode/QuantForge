@@ -56,13 +56,20 @@ def test_signals_never_look_ahead(planted):
         a[t0 + 1:] = a[t0 + 1:] * rng.uniform(0.5, 1.5, a.size - t0 - 1)
     pert = compute(*arrs)
     for x, y in zip(base, pert):
+        # guard against a vacuous pass: NaN == NaN under assert_array_equal
+        assert np.isfinite(x[t0 - 1000: t0 + 1]).all()
         np.testing.assert_array_equal(x[: t0 + 1], y[: t0 + 1])
+        assert not np.array_equal(x[t0 + 1:], y[t0 + 1:], equal_nan=True) or x is base[0]
 
 
 def test_rolling_helpers():
     x = np.arange(1.0, 7.0)
     np.testing.assert_array_equal(sg.rolling_sum(x, 3)[2:], [6, 9, 12, 15])
     assert np.all(np.isnan(sg.rolling_sum(x, 3)[:2]))
+    # a NaN poisons only the windows that contain it
+    np.testing.assert_array_equal(sg.rolling_sum(np.array([np.nan, 1, 2, 3, 4]), 2), [np.nan, np.nan, 3, 5, 7])
+    z = sg.zscore_trailing(sg.past_return_bps(100 + np.cumsum(np.ones(2000)) * 0.01, 5), 500)
+    assert np.isfinite(z[600:]).all()
     e = sg.ewma(np.r_[np.zeros(5), np.ones(200)], halflife=10)
     # the step enters at index 5, so after 10 observations (index 14) half the gap is closed
     assert e[5 + 9] == pytest.approx(0.5, abs=1e-12)
@@ -204,6 +211,14 @@ def test_binance_loader_as_of_sampling(tmp_path):
     np.testing.assert_allclose(s.buy_vol, [0.0, 0.5, 0.0])
     np.testing.assert_allclose(s.sell_vol, [0.0, 0.7, 0.0])
     assert s.tick == pytest.approx(0.1)
+
+
+def test_trades_before_first_quote_are_dropped():
+    s = book_from_events([1050, 1150, 1250], [1, 1, 1], [2, 2, 2], [1, 1, 1], [1, 1, 1],
+                         trade_time_ms=[10, 500, 1080, 1100], trade_qty=[5, 5, 1, 1],
+                         trade_is_buyer_maker=[False] * 4, step_ms=100)
+    np.testing.assert_array_equal(s.time_ms, [1100, 1200])
+    np.testing.assert_allclose(s.buy_vol, [2.0, 0.0])  # only the trades in (1000, 1100]
 
 
 def test_book_from_events_handles_unsorted_input():

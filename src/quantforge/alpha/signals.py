@@ -53,11 +53,19 @@ __all__ = [
 
 
 def rolling_sum(x, w: int) -> np.ndarray:
-    """Trailing sum over the last ``w`` observations (inclusive); NaN until full."""
+    """Trailing sum over the last ``w`` observations (inclusive).
+
+    NaN until the window is full, and NaN for any window that contains a NaN.
+    NaNs are counted separately rather than fed to ``cumsum``, so one NaN poisons
+    only the ``w`` windows that contain it, not every later value.
+    """
     x = np.asarray(x, float)
-    c = np.concatenate([[0.0], np.cumsum(x)])
+    bad = np.isnan(x)
+    c = np.concatenate([[0.0], np.cumsum(np.where(bad, 0.0, x))])
+    nb = np.concatenate([[0], np.cumsum(bad)])
     out = np.full(x.size, np.nan)
-    out[w - 1:] = c[w:] - c[:-w]
+    sums = c[w:] - c[:-w]
+    out[w - 1:] = np.where(nb[w:] - nb[:-w] > 0, np.nan, sums)
     return out
 
 

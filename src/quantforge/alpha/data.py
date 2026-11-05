@@ -102,7 +102,8 @@ def book_from_events(
         seller_aggr = np.asarray(trade_is_buyer_maker, bool)
         # trade at time tt belongs to the first grid point >= tt: interval (g_{i-1}, g_i]
         b = np.searchsorted(grid, tt, side="left")
-        ok = b < grid.size
+        # keep trades inside (g_0 - step, g_last]; earlier trades predate the first quote
+        ok = (b < grid.size) & (tt > grid[0] - step_ms)
         np.add.at(buy, b[ok & ~seller_aggr], qty[ok & ~seller_aggr])
         np.add.at(sell, b[ok & seller_aggr], qty[ok & seller_aggr])
     if tick is None:

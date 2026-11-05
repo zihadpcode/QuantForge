@@ -151,7 +151,7 @@ def main():
         r = ev.taker_backtest(yhat, book.bid, book.ask, H, thr, args.fee_bps)
         results[thr] = r
         out.append(f"| {thr} | {r.n_trades:,} | {r.hit_rate:.3f} | {r.gross_bps.mean():.4f} | {r.breakeven_fee_bps:.3f} | {r.mean_net_bps:.4f} |")
-    best = max(results.values(), key=lambda r: r.breakeven_fee_bps)
+    best = max(results.values(), key=lambda r: r.breakeven_fee_bps if np.isfinite(r.breakeven_fee_bps) else -np.inf)
     verdict = "survives" if best.breakeven_fee_bps > args.fee_bps else "does NOT survive"
     out.append(f"\nVerdict: the best variant breaks even at {best.breakeven_fee_bps:.2f} bp, so as a taker strategy it "
                f"**{verdict}** a {args.fee_bps} bp fee. A forecast this short-lived is monetised by a market maker "

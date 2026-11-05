@@ -16,6 +16,7 @@ rates         curve bootstrapping, Nelson-Siegel-Svensson, Vasicek, CIR
 risk          VaR / ES (historical, parametric, Cornish-Fisher, MC), backtests
 garch         GARCH(1,1) QMLE, forecasting, simulation
 portfolio     mean-variance, risk parity, Ledoit-Wolf shrinkage
+alpha         HFT signals, IC / Newey-West evaluation, walk-forward ridge, market making
 """
 
 from . import (

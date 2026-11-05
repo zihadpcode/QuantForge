@@ -161,7 +161,8 @@ From the report, at `h = 50`:
 A **controlled experiment** in the tests shows why this matters. On 40
 simulated markets with *no alpha at all*, the naive t-test "found" a
 significant signal **34 times out of 40**. Newey-West did so 4 times out of
-40, close to the 5% you would expect from luck. Our implementation matches
+40: 10%, against a nominal 5%. Bartlett-kernel Newey-West is mildly
+undersized in finite samples, but that is a different world from 85%. Our implementation matches
 `statsmodels` to 1e-8.
 
 ### 3.3 Walk-forward fitting with purging and an embargo
@@ -286,11 +287,14 @@ inventory risk management in one line.
 
 | strategy | paper: profit / sd / sd(q) | quantforge |
 |---|---|---|
-| symmetric | 67.21 / 13.43 / 8.66 | ≈ 68.0 / 13.4 / 8.6 |
-| inventory | 62.94 / 5.89 / 2.80 | ≈ 64.8 / 6.5–7.0 / 2.87 |
+| symmetric | 67.21 / 13.43 / 8.66 | ≈ 68.0 / 13.6–14.1 / 8.5 |
+| inventory | 62.94 / 5.89 / 2.80 | ≈ 64.8 / 6.5 / 2.96 |
 
-The symmetric strategy and the inventory distribution match. The inventory
-strategy's mean profit comes out about 3% higher than published. I tested
+The symmetric strategy matches to within about 5%. For the inventory
+strategy, mean profit is about 3% higher, P&L sd about 10% higher and
+inventory sd about 5% higher than published (2,000 paths, seeds 1–3). The
+qualitative result replicates: inventory control halves P&L risk and cuts
+inventory risk about threefold for a small loss of mean profit. I tested
 several simulation conventions (quote then move, move then quote, with and
 without the time-dependent spread term) and none reproduces 62.94 exactly.
 The difference is reported here rather than tuned away.
@@ -339,7 +343,7 @@ the flow is toxic.
 | Any label leakage? | embargo enforced; splits checked |
 | Are the costs right? | hand-computed backtest P&L, spread and fee by spread and fee |
 | Are the statistics right? | Newey-West matches statsmodels; PSR uniform under the null |
-| Is the market maker right? | Avellaneda-Stoikov paper replication; alpha dealer reduces exactly to AS when α = 0 |
+| Is the market maker right? | approximate Avellaneda-Stoikov replication (within 3–10%, see §7.1); alpha dealer reduces exactly to AS when α = 0 |
 
 ---
 
@@ -379,23 +383,23 @@ simulation, and treat any large IC as a bug until proven otherwise.
 
 ---
 
-## 11. Talking about this in interviews
+## 11. Key takeaways
 
-Lead with the methodology, not the P&L:
-
-1. "I built signals from order-book state and trade flow, and evaluated them
-   by IC decay with Newey-West inference, because overlapping returns
-   inflated naive t-stats about 5x."
-2. "I validated the pipeline on a simulated market with a planted alpha and
-   on one with no alpha. Naive OLS found fake alpha 85% of the time;
-   Newey-West brought that down to about 10%."
-3. "The combined signal had an out-of-sample IC of 0.32 in simulation, but
-   its break-even fee was about 1 bp, so as a taker strategy it loses money.
-   I monetised it through quote skew in an Avellaneda-Stoikov market maker,
-   which improved the Sharpe ratio from 5.6 to 7.1 against informed flow."
-4. Know the follow-ups:
+1. **Overlapping returns inflate naive t-statistics about 5x.** Newey-West
+   inference is not optional for multi-step forecasts sampled every step.
+2. **Validate the pipeline before trusting it on real data.** On zero-alpha
+   markets, naive OLS reported a significant signal 85% of the time;
+   Newey-West brought that to 10% (nominal 5%).
+3. **Statistical significance is not profitability.** The combined signal had
+   an out-of-sample IC of 0.32 in simulation, yet broke even at about 1 bp of
+   fees, so it loses money as a taker strategy.
+4. **Short-horizon alpha is monetised through quotes.** Skewing an
+   Avellaneda-Stoikov market maker by the forecast raised Sharpe from 5.6 to
+   7.1 with a perfect signal, but only to 5.7 with a realistic noisy one
+   (correlation 0.3). Signal quality matters more than the mechanism.
+5. **Questions worth being able to answer:**
    - Why ridge rather than OLS?
-   - Why an embargo?
-   - What does the Deflated Sharpe correct for?
-   - What is the microprice, and when does it equal imbalance?
-   - What breaks with queue position and latency?
+   - Why an embargo, and how long must it be?
+   - What does the Deflated Sharpe ratio correct for?
+   - What is the microprice, and when does it carry the same information as imbalance?
+   - What changes once queue position and latency are modelled?
