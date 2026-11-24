@@ -52,4 +52,8 @@ Rows 16 to 20: accepted 2026-11-19 as defaults. Rows 17, 18 and 20 still need ch
 | 25 | Test run, both scripts and the check each fit the budget split in docs/design.md section 4 | README says about 45 s for tests and showcase on an unnamed machine; nothing measured | Time each step in Phase 3 |
 | 26 | Each published Markdown report is byte for byte identical on repeated runs in the reference environment | Seeds are fixed; no wall time once decision 0007 lands | Run the reference job twice |
 | 27 | Phase 3 gets approval for one network install from PyPI (to create the lock and the environment) | Required by decision 0005; not yet asked | Ask the author at the start of Phase 3 |
-
+| 28 | GitHub still offers the runner images `ubuntu-24.04` and `macos-15` | Written from memory on 2026-11-22; the image list was not read (no network in this session) | Read the runner images page before the first push |
+| 29 | quantforge's `bs.price(100, 100, 1, 0.05, 0.2)` prints 10.450584 at six decimals and lies within 5e-7 of the stdlib value 10.450583572185565 in docs/metrics.json | Same formula; SciPy's `ndtr` and `math.erfc` agree to about 1e-16 | First `python tools/reproduce.py --check` with SciPy |
+| 30 | The showcase.py refactor writes the same docs/RESULTS.md bytes as before, apart from the timed calibration row | Mechanical indent; no logic change in `git diff -w` | `python tools/reproduce.py`, then `git diff docs/RESULTS.md` |
+| 31 | `pip install -e ".[dev]"` works on Python 3.14 in CI (scikit-learn and statsmodels have 3.14 wheels) | Assumption 23; not checked | First CI run, or the lock |
+| 32 | Using packages already in the uv cache by putting them on PYTHONPATH (pytest, ruff) counts as "already installed or cached", not as an install | Phase 3 instructions allow what is cached; nothing was downloaded or written to site-packages | Author to confirm |

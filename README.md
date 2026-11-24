@@ -1,6 +1,6 @@
 # quantforge
 
-[![tests](https://github.com/zihadpcode/QuantForge/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/zihadpcode/QuantForge/actions/workflows/tests.yml) ![python](https://img.shields.io/badge/python-3.10%2B-blue) ![license](https://img.shields.io/badge/license-MIT-green)
+[![tests](https://github.com/zihadpcode/QuantForge/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/zihadpcode/QuantForge/actions/workflows/tests.yml) ![python](https://img.shields.io/badge/python-3.12%2B-blue) ![license](https://img.shields.io/badge/license-MIT-green)
 
 **Derivatives pricing, volatility surfaces and quantitative risk in Python,
 with every model checked against a closed form, a published benchmark, or an

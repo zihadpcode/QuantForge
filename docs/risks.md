@@ -77,3 +77,22 @@ New risks added by the design:
 | R38 | Lowering the version from 1.0.0 to 0.9.0 confuses a reader who saw 1.0.0 | Low | Low | Changelog entry explains the reset; no release or tag ever existed | 3 |
 | R39 | The first network install in Phase 3 is refused or delayed, so no test can run locally and the design stays unproven | Medium | High | Ask at the start of Phase 3 (assumption 27); the design needs one install only | 3 |
 
+
+## Phase 3 changes (2026-11-22)
+
+Status of earlier rows after the Phase 3 work in the worktree (uncommitted):
+- R1: the guard and ignore rules exist (examples/report_io.py, alpha_research.py exit 3, .gitignore). The guard test through alpha_research.main is skipped without SciPy; the guard logic is tested with the standard library. Stays open until A9 passes in a full environment (slice 4.2).
+- R20: `permissions: contents: read` and `persist-credentials: false` added. Still open: no lockfile, actions pinned by tag, no audit.
+- R23: pyproject.toml and CI now say 3.12 and up. Retire once CI runs green on 3.12 to 3.14.
+- R28, R38: version is 0.9.0 with CHANGELOG.md.
+- R39: happened in part. The install was not done in this session, so no existing test ran; the work that needs no network was done and the rest is marked blocked.
+
+New risks:
+
+| # | Risk | Likelihood | Damage | Mitigation | Phase |
+|---|---|---|---|---|---|
+| R40 | Moving showcase.py's body into `main()` changed its output in a way ruff and a syntax check cannot see; it was not run (no SciPy) | Low | Medium | The move was mechanical (indent only, plus `--out`, metrics and one unused line removed); `git diff -w` shows the logic is untouched. First full run: compare docs/RESULTS.md with `git diff` | 3 |
+| R41 | docs/metrics.json was computed with `math.erfc`, not by showcase.py; if SciPy's value prints a different sixth decimal the first check fails | Low | Low | 10.450583572185565 sits 7e-8 from the nearest rounding edge, far above float error; regenerate with `tools/reproduce.py` on the first full run | 3 |
+| R42 | Until uv.lock lands, CI installs the newest packages with pip, so a new upstream release can turn CI red or move a digit | Medium | Medium | The reproduce job compares within a tolerance; switch to `uv sync --locked` as soon as the install is approved (runbook section 5) | 3 |
+| R43 | Runner names ubuntu-24.04 and macos-15 were written from memory; one may be retired or renamed, so a job never starts | Low | Low | Read the current GitHub runner image list before the first push (assumption 28) | 3 |
+| R44 | The CI reproduce job runs before anyone has run showcase.py with the refactor, so its first result also tests R40 and R41 at once and a red run is hard to read | Medium | Low | Run `python tools/reproduce.py --check` locally first, once SciPy is installed | 3 |

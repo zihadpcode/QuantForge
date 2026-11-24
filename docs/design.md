@@ -1,6 +1,6 @@
 # Design
 
-Phase 2. Date: 2026-11-19. Status: awaiting approval. Code read: origin/main at b1e33bc. Tier A: a library and two report scripts on the author's laptop, a public source repository, GitHub Actions as the only remote machine, a budget of 0 USD.
+Phase 2. Date: 2026-11-19. Status: approved 2026-11-22. Code read: origin/main at b1e33bc. Tier A: a library and two report scripts on the author's laptop, a public source repository, GitHub Actions as the only remote machine, a budget of 0 USD.
 
 QuantForge stays separate from zft-capital (decision 0001). Nothing in this design shares code, data, tooling or configuration with it.
 

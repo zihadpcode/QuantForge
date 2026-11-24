@@ -1,6 +1,6 @@
 # 0012: Version and release
 
-Date: 2026-11-19. Status: proposed in Phase 2, awaiting approval. Options table: docs/design.md section 1.10.
+Date: 2026-11-19. Status: accepted 2026-11-22 (proposed in Phase 2). Options table: docs/design.md section 1.10.
 
 ## Decision
 

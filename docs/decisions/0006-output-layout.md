@@ -1,6 +1,6 @@
 # 0006: Data store and output layout
 
-Date: 2026-11-19. Status: proposed in Phase 2, awaiting approval. Implements decision 0002 option A. Options table: docs/design.md section 1.4.
+Date: 2026-11-19. Status: accepted 2026-11-22 (proposed in Phase 2). Implements decision 0002 option A. Options table: docs/design.md section 1.4.
 
 ## Decision
 

@@ -4,13 +4,20 @@
     python examples/alpha_research.py --bookticker BTCUSDT-bookTicker-2024-03-01.zip \
                                       --aggtrades  BTCUSDT-aggTrades-2024-03-01.zip
 
-Writes figures to docs/figures/alpha_*.png and the report to docs/ALPHA_RESULTS.md.
+Simulated run: writes docs/ALPHA_RESULTS.md and docs/figures/alpha_*.png (tracked), or the same
+files under --out DIR.
+
+Real data run (--bookticker): writes under local/runs/RUN_ID/ by default. local/ is git ignored.
+An --out folder outside local/ is refused with exit code 3, because Binance Vision data is
+CC BY NC SA 4.0 and must not reach tracked files (decisions 0002 and 0006).
+
 Every number in the report is computed by this script; nothing is hard-coded.
 """
 
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 import matplotlib
@@ -18,16 +25,13 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+from report_io import EXIT_OUTSIDE_LOCAL, OutputOutsideLocalError, make_run_id, resolve_out_dir
 
 from quantforge.alpha import evaluation as ev
 from quantforge.alpha import signals as sg
 from quantforge.alpha.data import load_binance
 from quantforge.alpha.market_making import simulate_market_maker
 from quantforge.alpha.simulate import simulate_book
-
-ROOT = Path(__file__).resolve().parents[1]
-FIG = ROOT / "docs" / "figures"
-FIG.mkdir(parents=True, exist_ok=True)
 
 SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#6250d6", "#e34948"]
 INK, INK2, MUTED, GRID, SURFACE = "#0b0b0b", "#52514e", "#8a8984", "#e4e3df", "#fcfcfb"
@@ -58,15 +62,34 @@ def fmt(x, d=3):
     return f"{x:.{d}f}"
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--bookticker")
-    ap.add_argument("--aggtrades")
-    ap.add_argument("--step-ms", type=int, default=100)
-    ap.add_argument("--fee-bps", type=float, default=5.0, help="taker fee for the cost analysis")
-    args = ap.parse_args()
+def parse_args(argv: list[str] | None) -> argparse.Namespace:
+    ap = argparse.ArgumentParser(description="High-frequency alpha study on simulated or Binance data.")
+    ap.add_argument("--bookticker", help="Binance bookTicker zip or csv (real data run)")
+    ap.add_argument("--aggtrades", help="Binance aggTrades zip or csv (optional)")
+    ap.add_argument("--step-ms", type=int, default=100, help="grid step in milliseconds")
+    ap.add_argument("--fee-bps", type=float, default=5.0, help="taker fee for the cost analysis, in bps")
+    ap.add_argument("--out", type=Path, default=None,
+                    help="output folder (default: docs for simulated runs, local/runs/RUN_ID for real data)")
+    return ap.parse_args(argv)
 
-    if args.bookticker:
+
+def main(argv: list[str] | None = None) -> int:
+    """Run the study and write the report. Returns the process exit code.
+
+    0 done; 2 bad arguments (raised by argparse); 3 real data output outside local/.
+    """
+    args = parse_args(argv)
+    real_data = bool(args.bookticker)
+    run_id = make_run_id(args.bookticker) if real_data else None
+    try:  # checked before any data is read or any file is written
+        out_dir = resolve_out_dir(args.out, real_data, run_id)
+    except OutputOutsideLocalError as err:
+        print(f"error: {err}", file=sys.stderr)
+        return EXIT_OUTSIDE_LOCAL
+    FIG = out_dir / "figures"
+    FIG.mkdir(parents=True, exist_ok=True)
+
+    if real_data:
         book = load_binance(args.bookticker, args.aggtrades, step_ms=args.step_ms)
         source = f"Binance files `{Path(args.bookticker).name}` (step {args.step_ms} ms)"
         null_book = None
@@ -238,11 +261,12 @@ def main():
         out.append(f"| PSR, half-spread paid, no fee | {ev.probabilistic_sharpe_ratio(z0.pnl_bps):.3f} | "
                    f"{ev.probabilistic_sharpe_ratio(rn.pnl_bps):.3f} |")
 
-    path = ROOT / "docs" / "ALPHA_RESULTS.md"
+    path = out_dir / "ALPHA_RESULTS.md"
     path.write_text("\n".join(out) + "\n")
     print("\n".join(out))
-    print(f"\nwrote {path.relative_to(ROOT)} and docs/figures/alpha_*.png")
+    print(f"\nwrote {path} and {FIG}/alpha_*.png")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

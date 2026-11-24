@@ -1,6 +1,6 @@
 # 0004: Libraries and dependency groups
 
-Date: 2026-11-19. Status: proposed in Phase 2, awaiting approval. Options table: docs/design.md section 1.2.
+Date: 2026-11-19. Status: accepted 2026-11-22 (proposed in Phase 2). Options table: docs/design.md section 1.2.
 
 ## Decision
 

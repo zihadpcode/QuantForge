@@ -1,6 +1,6 @@
 # Revamp plan
 
-Date: 2026-11-16. Updated 2026-11-19 in Phase 2 so the Phase 3 and Phase 4 slices match docs/design.md. Nothing here is started. Each slice waits for approval.
+Date: 2026-11-16. Updated 2026-11-19 in Phase 2 so the Phase 3 and Phase 4 slices match docs/design.md. Phase 2 approved 2026-11-22. Phase 3 slice status lives in docs/progress.md (3.3 done; 3.1, 3.4 and 3.5 partly done; 3.2 blocked).
 
 ## Where the project stands against Phases 1 to 8
 

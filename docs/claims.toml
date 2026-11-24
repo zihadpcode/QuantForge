@@ -1,0 +1,21 @@
+# Claims: each number published in README.md, tied to a metric in docs/metrics.json.
+# Hand written. Checked by `python tools/reproduce.py --check` (decision 0007).
+#
+# Fields per [[claim]]:
+#   id             short unique name
+#   metric         metric id in docs/metrics.json
+#   readme_text    exact text that must appear in README.md; it must contain the metric
+#                  formatted with its format spec, so the README digit and the metric agree
+#   abs_tol or rel_tol
+#                  how far a regenerated value may move from the committed one
+#
+# Walking skeleton: one claim. Phase 4 slice 4.1 adds one claim per README number.
+
+schema_version = 1
+
+[[claim]]
+id = "bs-atm-call"
+metric = "bs.atm_call"
+readme_text = "| Black-Scholes ATM call (S=K=100, r=5%, σ=20%) | 10.450584 |"
+# Half a unit in the sixth decimal. Separately, the check fails if the printed digits change.
+abs_tol = 5e-7

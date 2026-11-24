@@ -1,20 +1,56 @@
 name: tests
 
+# Decisions 0003 (Python 3.12 to 3.14), 0008 (macOS job, read only token) and 0010 (manual rerun).
+# Not done yet, see docs/progress.md slice 3.4:
+#   - actions are pinned by tag, not yet by commit (needs a lookup of each tag's commit)
+#   - installs use pip until uv.lock exists; then setup-uv plus `uv sync --locked` (docs/runbook.md)
+
 on:
   push:
   pull_request:
+  workflow_dispatch:
+
+# The workflow needs no secrets and only reads the repository.
+permissions:
+  contents: read
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    name: test (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        os: [ubuntu-24.04]
+        python-version: ["3.12", "3.13", "3.14"]
+        include:
+          - os: macos-15
+            python-version: "3.12"
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: pip install -e ".[dev]"
-      - run: ruff check src tests examples
+      - run: python -m pip install -e ".[dev]"
+      - run: ruff check src tests examples tools
       - run: pytest
+
+  # Walking skeleton of decision 0007: regenerate the metrics and compare them with docs/.
+  # `--reference` (byte equal reports) is added once uv.lock exists and wall times leave
+  # docs/RESULTS.md (Phase 4 slice 4.1).
+  reproduce:
+    name: reproduce check (ubuntu-24.04, Python 3.12)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -e ".[examples]"
+      - run: python tools/reproduce.py --check

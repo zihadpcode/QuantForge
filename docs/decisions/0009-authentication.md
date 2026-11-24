@@ -1,6 +1,6 @@
 # 0009: Authentication
 
-Date: 2026-11-19. Status: proposed in Phase 2, awaiting approval.
+Date: 2026-11-19. Status: accepted 2026-11-22 (proposed in Phase 2).
 
 ## Decision
 

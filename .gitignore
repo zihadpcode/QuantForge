@@ -5,3 +5,10 @@ __pycache__/
 build/
 dist/
 *.bundle
+
+# Raw market data and real data run outputs never enter git (decisions 0002 and 0006).
+# Binance Vision files are CC BY NC SA 4.0; this repository is MIT.
+data/
+local/
+*.zip
+*.csv
